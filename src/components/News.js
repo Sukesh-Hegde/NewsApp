@@ -13,36 +13,50 @@ export default class News extends Component {
 
   async componentDidMount() {
     let url =
-      "https://newsapi.org/v2/everything?q=tesla&from=2024-06-23&sortBy=publishedAt&apiKey=dc981be590f84a86a675869e02f8aebf&page=1&pagesize=10";
+      "https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=dc981be590f84a86a675869e02f8aebf&page=1&pagesize=6";
     let data = await fetch(url);
     let parsedData = await data.json();
     console.log(parsedData);
-    this.setState({ articles: parsedData.articles });
+    this.setState({ articles: parsedData.articles, totalResults: parsedData.totalResults});
   }
 
   handleNextClick = async () => {
     console.log("next");
-    let url = `https://newsapi.org/v2/everything?q=tesla&from=2024-06-23&sortBy=publishedAt&apiKey=dc981be590f84a86a675869e02f8aebf&page=${
-      this.state.page + 1
-    }&pagesize=10`;
-    let data = await fetch(url);
-    let parsedData = await data.json();
-    console.log(parsedData);
-    this.setState({ page: this.state.page + 1, articles: parsedData.articles });
+    if (this.state.page + 1 > Math.ceil(this.state.totalResults / 6)) {
+        console.log(
+          "page " +
+            this.state.page +
+            "math: " +
+            Math.ceil(this.state.totalResults / 6)
+        );
+        
+    } else {
+
+      let url = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=dc981be590f84a86a675869e02f8aebf&page=${
+        this.state.page + 1
+      }&pagesize=6`;
+      let data = await fetch(url);
+      let parsedData = await data.json();
+      console.log(parsedData);
+      this.setState({
+        page: this.state.page + 1,
+        articles: parsedData.articles,
+      });
+    }
   };
 
   handlePrevClick = async () => {
     console.log("prev");
-        let url = `https://newsapi.org/v2/everything?q=tesla&from=2024-06-23&sortBy=publishedAt&apiKey=dc981be590f84a86a675869e02f8aebf&page=${
-          this.state.page - 1
-        }&pagesize=10`;
-        let data = await fetch(url);
-        let parsedData = await data.json();
-        console.log(parsedData);
-        this.setState({
-          page: this.state.page -1,
-          articles: parsedData.articles,
-        });
+    let url = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=dc981be590f84a86a675869e02f8aebf&page=${
+      this.state.page - 1
+    }&pagesize=6`;
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    console.log(parsedData);
+    this.setState({
+      page: this.state.page - 1,
+      articles: parsedData.articles,
+    });
   };
 
   render() {
