@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import NewsItem from "./NewsItem";
 import Spinner from "./Spinner";
 import PropTypes from "prop-types";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export default class News extends Component {
   static defaultProps = {
@@ -19,10 +20,11 @@ export default class News extends Component {
     super(props);
     this.state = {
       articles: [],
-      loading: false,
+      loading: true,
       page: 1,
+      totalResults: 0,
     };
-    document.title = `${this.props.category} - NewsApp`
+    document.title = `${this.props.category} - NewsApp`;
   }
 
   async updateNews() {
@@ -40,50 +42,75 @@ export default class News extends Component {
   }
 
   async componentDidMount() {
-this.updateNews();
+    this.updateNews();
   }
 
-  handleNextClick = async () => {
-    this.setState({ page: this.state.page + 1 });
-    this.updateNews();
-  };
+  // handleNextClick = async () => {
+  //   this.setState({ page: this.state.page + 1 });
+  //   this.updateNews();
+  // };
 
-  handlePrevClick = async () => {
-    this.setState({ page: this.state.page - 1 });
-    this.updateNews();
+  // handlePrevClick = async () => {
+  //   this.setState({ page: this.state.page - 1 });
+  //   this.updateNews();
+  // };
+
+  fetchMoreData = async () => {
+    this.setState({ page: this.state.page + 1 });
+    let url = `https://newsapi.org/v2/top-headlines?&country=${this.props.country}&category=${this.props.category}&apiKey=dc981be590f84a86a675869e02f8aebf&page=${this.state.page}&pagesize=${this.props.pageSize}`;
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    this.setState({
+      articles: this.state.articles.concat(parsedData.articles),
+      totalResults: parsedData.totalResults,
+    });
   };
 
   render() {
     return (
-      <div className="container my-3">
-        <h1 className="text-center" style={{ margin: "35px 0px" }}>
-          Top Headlines on {this.props.category}
-        </h1>
-        {this.state.loading && <Spinner />}
-        <div className="row">
-          {!this.state.loading &&
-            this.state.articles.map((element) => {
-              return (
-                <div className="col-md-4" key={element.url}>
-                  <NewsItem
-                    title={element.title}
-                    description={element.description}
-                    imageUrl={
-                      element.urlToImage
-                        ? element.urlToImage
-                        : "https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg?fit=fill&w=1200&h=630"
-                    }
-                    newsUrl={element.url}
-                    author={element.author}
-                    date={element.publishedAt}
-                    source={element.source.name}
-                    category={this.props.category}
-                  />
-                </div>
-              );
-            })}
+      <>
+        <div className="container my-3">
+          <h1 className="text-center" style={{ margin: "35px 0px" }}>
+            Top Headlines on {this.props.category}
+          </h1>
+          {this.state.loading && <Spinner />}
+          <InfiniteScroll
+            dataLength={this.state.articles.length}
+            next={this.fetchMoreData}
+            hasMore={this.state.articles.length !== this.state.totalResults}
+            loader={<Spinner />}
+          >
+            <div className="container">
+              <div className="row">
+                {this.state.articles.map((element, index) => (
+                  <div className="col-md-4" key={element.url + index}>
+                    <NewsItem
+                      title={element.title}
+                      description={element.description}
+                      imageUrl={
+                        element.urlToImage
+                          ? element.urlToImage
+                          : "https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg?fit=fill&w=1200&h=630"
+                      }
+                      newsUrl={element.url}
+                      author={element.author}
+                      date={element.publishedAt}
+                      source={element.source.name}
+                      category={this.props.category}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </InfiniteScroll>
         </div>
-        <div className="container d-flex justify-content-between">
+      </>
+    );
+  }
+}
+
+{
+  /* <div className="container d-flex justify-content-between">
           <button
             disabled={this.state.page <= 1}
             type="button"
@@ -103,8 +130,5 @@ this.updateNews();
           >
             Next &rarr;
           </button>
-        </div>
-      </div>
-    );
-  }
+        </div> */
 }

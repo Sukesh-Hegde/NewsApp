@@ -12,9 +12,8 @@ export default class NewsItem extends Component {
       author,
       date,
       source,
-      category,
     } = this.props;
-        console.log(category);
+
 
 
     return (
